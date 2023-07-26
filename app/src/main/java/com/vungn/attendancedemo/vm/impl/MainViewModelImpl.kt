@@ -1,6 +1,5 @@
 package com.vungn.attendancedemo.vm.impl
 
-import android.app.AlarmManager
 import android.content.Context
 import android.net.Network
 import android.util.Log
@@ -97,16 +96,6 @@ class MainViewModelImpl @Inject constructor(
                 }
             }
         }
-    }
-
-    override fun startAlarm(context: Context, alarmManager: AlarmManager) {
-        Log.d(TAG, "startAlarm")
-//        val alarmIntent = Intent(context, AlarmReceiver::class.java).let { intent ->
-//            PendingIntent.getBroadcast(context, 0, intent, PendingIntent.FLAG_IMMUTABLE)
-//        }
-//        for (i in 1..15) {
-//            alarmManager.startScan(alarmIntent, Calendar.getInstance().startClassLesson(i))
-//        }
     }
 
     override fun syncAll() {

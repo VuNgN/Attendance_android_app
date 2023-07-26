@@ -4,8 +4,6 @@ package com.vungn.attendancedemo.ui
 
 import android.Manifest
 import android.annotation.SuppressLint
-import android.app.AlarmManager
-import android.content.Context
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -29,7 +27,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import com.vungn.attendancedemo.vm.MainViewModel
 
@@ -44,7 +41,6 @@ fun Main(
         Manifest.permission.ACCESS_WIFI_STATE,
         Manifest.permission.CHANGE_WIFI_STATE
     )
-    val context = LocalContext.current
 
     val loading = viewModel.loading.collectAsState()
     val isOnline = viewModel.isOnline.collectAsState()
@@ -54,16 +50,9 @@ fun Main(
     val syncMessage = viewModel.syncMessage.collectAsState()
 
     RequestPermissions(permissions = permissionList) {
-        val alarmMgr = remember {
-            context.applicationContext.getSystemService(Context.ALARM_SERVICE) as AlarmManager
-        }
         val snackBarHostState = remember {
             SnackbarHostState()
         }
-
-        LaunchedEffect(key1 = true, block = {
-            viewModel.startAlarm(context, alarmMgr)
-        })
 
         LaunchedEffect(key1 = syncMessage.value, block = {
             if (syncMessage.value != null) {

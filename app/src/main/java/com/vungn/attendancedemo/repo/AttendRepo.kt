@@ -94,16 +94,6 @@ class AttendRepo @Inject constructor(
         Log.d(TAG, "Data with id($_id) was updated: ${Gson().toJson(syncedData)}")
     }
 
-//    private fun startAttendWorker() {
-//        val constraints =
-//            Constraints.Builder().setRequiredNetworkType(NetworkType.CONNECTED).build()
-//        val attendWorkRequest =
-//            OneTimeWorkRequestBuilder<AttendWorker>().setConstraints(constraints).build()
-//        WorkManager.getInstance(context).enqueueUniqueWork(
-//            "attend", androidx.work.ExistingWorkPolicy.KEEP, attendWorkRequest
-//        )
-//    }
-
     companion object {
         private val TAG = this::class.simpleName
     }
