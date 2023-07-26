@@ -94,6 +94,7 @@ dependencies {
     // Livedata
     implementation "androidx.compose.runtime:runtime-livedata:1.4.2"
 
+    implementation 'androidx.compose.material:material-icons-extended:1.2.0'
     implementation 'androidx.core:core-ktx:1.8.0'
     implementation platform('org.jetbrains.kotlin:kotlin-bom:1.8.0')
     implementation 'androidx.lifecycle:lifecycle-runtime-ktx:2.3.1'
