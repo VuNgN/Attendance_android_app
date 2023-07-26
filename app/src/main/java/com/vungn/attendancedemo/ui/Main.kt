@@ -13,7 +13,9 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.material3.Button
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
@@ -44,6 +46,7 @@ fun Main(
     )
     val context = LocalContext.current
 
+    val loading = viewModel.loading.collectAsState()
     val isOnline = viewModel.isOnline.collectAsState()
     val isAllSynced = viewModel.isAllSynced.collectAsState()
     val isSyncedSuccess = viewModel.isSyncedSuccess.collectAsState(false)
@@ -87,8 +90,15 @@ fun Main(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Text(text = "You have ${numOfNotSyncs.value} not synced classes")
-                        Button(onClick = { viewModel.syncAll() }) {
-                            Text(text = "Sync all")
+                        Button(onClick = { viewModel.syncAll() }, enabled = !loading.value) {
+                            if (loading.value) {
+                                CircularProgressIndicator(
+                                    color = MaterialTheme.colorScheme.onPrimary,
+                                    modifier = Modifier.size(25.dp)
+                                )
+                            } else {
+                                Text(text = "Sync all")
+                            }
                         }
                     }
                 }

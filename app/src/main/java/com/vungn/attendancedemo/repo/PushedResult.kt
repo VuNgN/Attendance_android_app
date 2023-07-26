@@ -10,4 +10,9 @@ interface PushedResult<T> {
      * Callback when error
      */
     fun onError(error: String?)
+
+    /**
+     * Callback when released
+     */
+    fun onReleased()
 }

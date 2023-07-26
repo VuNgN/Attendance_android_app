@@ -9,6 +9,7 @@ import com.vungn.attendancedemo.vm.impl.MainViewModelImpl
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
+import kotlinx.coroutines.flow.onCompletion
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import retrofit2.Call
@@ -62,6 +63,9 @@ class AttendAllRepo @Inject constructor(
             }
         })
         awaitClose { call.cancel() }
+    }.onCompletion {
+        Log.d(TAG, "Push all data completed")
+        _onPushedResult.onReleased()
     }
 
     override suspend fun updateLocalDatabase() {

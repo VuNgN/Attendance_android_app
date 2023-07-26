@@ -9,6 +9,7 @@ import com.vungn.attendancedemo.util.toAttendClass
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
+import kotlinx.coroutines.flow.onCompletion
 import kotlinx.coroutines.launch
 import retrofit2.Call
 import retrofit2.Callback
@@ -27,6 +28,10 @@ class AttendRepo @Inject constructor(
 
         override fun onError(error: String?) {
             Log.d(TAG, "On Responded Error: $error")
+        }
+
+        override fun onReleased() {
+            Log.d(TAG, "On Responded Released")
         }
     }
     private var _onSavedResult: SavedResult = object : SavedResult {
@@ -74,6 +79,8 @@ class AttendRepo @Inject constructor(
             }
         })
         awaitClose { call.cancel() }
+    }.onCompletion {
+        _onPushedResult.onReleased()
     }
 
     override suspend fun updateLocalDatabase() {

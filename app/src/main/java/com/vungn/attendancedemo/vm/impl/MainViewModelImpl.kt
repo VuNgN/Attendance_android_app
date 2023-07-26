@@ -29,6 +29,7 @@ import javax.inject.Inject
 class MainViewModelImpl @Inject constructor(
     @ApplicationContext context: Context, private val attendAllRepo: AttendAllRepo
 ) : ViewModel(), MainViewModel {
+    private val _loading = MutableStateFlow(false)
     private val _isOnline = checkIsOnline(context = context)
     private val _isAllSynced = MutableStateFlow(false)
     private val _isSyncedSuccess = MutableSharedFlow<Boolean>()
@@ -54,18 +55,29 @@ class MainViewModelImpl @Inject constructor(
                 _isSyncedSuccess.emit(true)
                 delay(3000)
                 _isSyncedSuccess.emit(false)
+                _syncMessage.emit(null)
             }
         }
 
         override fun onError(error: String?) {
             viewModelScope.launch(Dispatchers.Main) {
                 Log.e(TAG, "Push all data fail: $error")
-                _syncMessage.emit(MessageError(error ?: "Unknown error"))
                 _isSyncedSuccess.emit(false)
+                _syncMessage.emit(MessageError(error ?: "Unknown error"))
+                delay(3000)
+                _syncMessage.emit(null)
+            }
+        }
+
+        override fun onReleased() {
+            viewModelScope.launch(Dispatchers.Main) {
+                _loading.emit(false)
             }
         }
     }
 
+    override val loading: StateFlow<Boolean>
+        get() = _loading
     override val isOnline: StateFlow<Boolean>
         get() = _isOnline
     override val isAllSynced: StateFlow<Boolean>
@@ -98,6 +110,7 @@ class MainViewModelImpl @Inject constructor(
     }
 
     override fun syncAll() {
+        _loading.value = true
         viewModelScope.launch(Dispatchers.IO) {
             attendAllRepo.execute(onPushedResult = _onPushedResult)
         }
