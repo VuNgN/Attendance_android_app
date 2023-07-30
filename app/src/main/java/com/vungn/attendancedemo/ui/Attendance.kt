@@ -15,13 +15,11 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.ArrowBack
 import androidx.compose.material.icons.rounded.Bluetooth
+import androidx.compose.material.icons.rounded.Check
 import androidx.compose.material.icons.rounded.CheckCircle
-import androidx.compose.material.icons.rounded.Refresh
 import androidx.compose.material.icons.rounded.Wifi
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -56,8 +54,6 @@ fun Attendance(
     val backPressDispatcher = LocalOnBackPressedDispatcherOwner.current?.onBackPressedDispatcher
     val isAttended = viewModel.isAttended.collectAsState()
     val message = viewModel.message.collectAsState()
-    val nearbyWifi = viewModel.nearbyWifi.collectAsState()
-    val nearbyBluetooth = viewModel.nearbyBluetooth.collectAsState()
     val isWifiEnable = viewModel.isWifiEnable.collectAsState()
     val isBluetoothEnable = viewModel.isBluetoothEnable.collectAsState()
     val enable = remember {
@@ -66,12 +62,12 @@ fun Attendance(
     val snackBarHostState = remember {
         SnackbarHostState()
     }
-    val bluetoothRequest = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.StartActivityForResult(),
-        onResult = {})
-    val wifiRequest = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.StartActivityForResult(),
-        onResult = {})
+    val bluetoothRequest =
+        rememberLauncherForActivityResult(contract = ActivityResultContracts.StartActivityForResult(),
+            onResult = {})
+    val wifiRequest =
+        rememberLauncherForActivityResult(contract = ActivityResultContracts.StartActivityForResult(),
+            onResult = {})
 
     DisposableEffect(key1 = backPressDispatcher, effect = {
         backPressDispatcher?.addCallback {
@@ -85,6 +81,12 @@ fun Attendance(
             snackBarHostState.showSnackbar("Attend success")
         } else {
             enable.value = true
+        }
+    })
+
+    LaunchedEffect(key1 = isWifiEnable.value, key2 = isBluetoothEnable.value, block = {
+        if (!isAttended.value) {
+            enable.value = isWifiEnable.value && isBluetoothEnable.value
         }
     })
 
@@ -120,9 +122,9 @@ fun Attendance(
             )
         ) {
             if (isAttended.value) Icon(
-                imageVector = Icons.Rounded.CheckCircle, contentDescription = "Điểm danh thành công"
+                imageVector = Icons.Rounded.CheckCircle, contentDescription = "Attend success"
             ) else {
-                Text(text = "Điểm danh")
+                Text(text = "Attend")
             }
         }
     }) { paddingValues ->
@@ -134,28 +136,27 @@ fun Attendance(
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .align(Alignment.TopStart),
+                    .align(Alignment.TopStart)
+                    .padding(horizontal = 20.dp),
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.spacedBy(10.dp)
             ) {
                 Text(text = "Room: ${overviewClazz.value?.room} - ${overviewClazz.value?.area}")
-                Text(text = "Token: ${overviewClazz.value?.token}")
+                Text(text = "This feature is only available when you enable: ")
                 Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 20.dp),
-                    horizontalArrangement = Arrangement.SpaceBetween
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
-                        text = "Nearby Wi-Fi", style = MaterialTheme.typography.titleMedium
+                        text = "Wi-Fi", style = MaterialTheme.typography.titleMedium
                     )
                     if (isWifiEnable.value) {
-                        IconButton(onClick = { viewModel.refreshWifi() }) {
-                            Icon(
-                                imageVector = Icons.Rounded.Refresh,
-                                contentDescription = "Refresh Wi-Fi"
-                            )
-                        }
+                        Icon(
+                            imageVector = Icons.Rounded.Check,
+                            contentDescription = null,
+                            tint = Color.Green
+                        )
                     } else {
                         IconButton(onClick = {
                             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
@@ -172,37 +173,23 @@ fun Attendance(
                         }
                     }
                 }
-                if (isWifiEnable.value) {
-                    LazyColumn(modifier = Modifier
-                        .fillMaxWidth()
-                        .weight(1f)
-                        .padding(horizontal = 20.dp),
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        content = {
-                            items(nearbyWifi.value) { wifi ->
-                                Text(text = wifi.name)
-                            }
-                        })
-                } else {
+                if (!isWifiEnable.value) {
                     Text(text = "Wi-Fi need to be enabled to attend")
                 }
-
                 Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 20.dp),
-                    horizontalArrangement = Arrangement.SpaceBetween
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
-                        text = "Nearby Bluetooth", style = MaterialTheme.typography.titleMedium
+                        text = "Bluetooth", style = MaterialTheme.typography.titleMedium
                     )
                     if (isBluetoothEnable.value) {
-                        IconButton(onClick = { viewModel.refreshBluetooth() }) {
-                            Icon(
-                                imageVector = Icons.Rounded.Refresh,
-                                contentDescription = "Refresh Bluetooth"
-                            )
-                        }
+                        Icon(
+                            imageVector = Icons.Rounded.Check,
+                            contentDescription = null,
+                            tint = Color.Green
+                        )
                     } else {
                         IconButton(onClick = {
                             val bluetoothIntent = Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE)
@@ -215,18 +202,7 @@ fun Attendance(
                         }
                     }
                 }
-                if (isBluetoothEnable.value) {
-                    LazyColumn(modifier = Modifier
-                        .fillMaxWidth()
-                        .weight(1f)
-                        .padding(horizontal = 20.dp),
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        content = {
-                            items(nearbyBluetooth.value.toList()) { bluetooth ->
-                                Text(text = bluetooth.name ?: "<UNKNOWN-Name>")
-                            }
-                        })
-                } else {
+                if (!isBluetoothEnable.value) {
                     Text(text = "Bluetooth need to be enabled to attend")
                 }
             }

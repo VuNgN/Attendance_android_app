@@ -1,11 +1,11 @@
 package com.vungn.attendancedemo.util
 
-import android.app.AlarmManager
-import android.app.PendingIntent
+import android.content.ComponentName
+import android.content.Intent
+import android.os.Build
 import com.vungn.attendancedemo.model.Clazz
 import com.vungn.attendancedemo.model.OverviewClass
 import com.vungn.attendancedemo.model.server.AttendClass
-import java.util.Calendar
 import java.util.Date
 
 fun String.toOverviewClass(): OverviewClass {
@@ -38,92 +38,20 @@ fun Clazz.toAttendClass(): AttendClass {
     )
 }
 
-fun AlarmManager.startScan(
-    pendingIntent: PendingIntent, startTime: Calendar
-) {
-    this.set(
-        AlarmManager.RTC, startTime.timeInMillis, pendingIntent
-    )
-}
-
-fun Calendar.startClassLesson(lesson: Int): Calendar {
-    return this.apply {
-        timeInMillis = System.currentTimeMillis()
-        when (lesson) {
-            1 -> {
-                set(Calendar.HOUR_OF_DAY, 6)
-                set(Calendar.MINUTE, 55)
-            }
-
-            2 -> {
-                set(Calendar.HOUR_OF_DAY, 7)
-                set(Calendar.MINUTE, 50)
-            }
-
-            3 -> {
-                set(Calendar.HOUR_OF_DAY, 8)
-                set(Calendar.MINUTE, 45)
-            }
-
-            4 -> {
-                set(Calendar.HOUR_OF_DAY, 9)
-                set(Calendar.MINUTE, 40)
-            }
-
-            5 -> {
-                set(Calendar.HOUR_OF_DAY, 10)
-                set(Calendar.MINUTE, 35)
-            }
-
-            6 -> {
-                set(Calendar.HOUR_OF_DAY, 11)
-                set(Calendar.MINUTE, 30)
-            }
-
-            7 -> {
-                set(Calendar.HOUR_OF_DAY, 12)
-                set(Calendar.MINUTE, 50)
-            }
-
-            8 -> {
-                set(Calendar.HOUR_OF_DAY, 13)
-                set(Calendar.MINUTE, 45)
-            }
-
-            9 -> {
-                set(Calendar.HOUR_OF_DAY, 14)
-                set(Calendar.MINUTE, 40)
-            }
-
-            10 -> {
-                set(Calendar.HOUR_OF_DAY, 15)
-                set(Calendar.MINUTE, 35)
-            }
-
-            11 -> {
-                set(Calendar.HOUR_OF_DAY, 16)
-                set(Calendar.MINUTE, 30)
-            }
-
-            12 -> {
-                set(Calendar.HOUR_OF_DAY, 17)
-                set(Calendar.MINUTE, 25)
-            }
-
-            13 -> {
-                set(Calendar.HOUR_OF_DAY, 18)
-                set(Calendar.MINUTE, 45)
-            }
-
-            14 -> {
-                set(Calendar.HOUR_OF_DAY, 19)
-                set(Calendar.MINUTE, 40)
-            }
-
-            15 -> {
-                set(Calendar.HOUR_OF_DAY, 20)
-                set(Calendar.MINUTE, 35)
-            }
+fun Intent.getRequestAutoStartIntent(): Intent = this.apply {
+    manufacturers.forEach {
+        if (it.isAutoStartSupported()) {
+            this.component = ComponentName(
+                it.pkg, it.cls
+            )
         }
     }
+}
+
+fun Manufacturer.isAutoStartSupported(): Boolean {
+    return Build.MANUFACTURER.equals(this.brand, ignoreCase = true)
+}
+
+fun List<Manufacturer>.isAutoStartSupported(): Boolean {
+    return this.any { it.isAutoStartSupported() }
 }

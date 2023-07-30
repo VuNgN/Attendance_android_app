@@ -18,7 +18,7 @@ import javax.inject.Inject
 @SuppressLint("MissingPermission")
 class WifiHelper @Inject constructor(@ApplicationContext private val context: Context) {
     private val _wifiManager: WifiManager =
-        context.applicationContext.getSystemService(Context.WIFI_SERVICE) as WifiManager
+        context.getSystemService(Context.WIFI_SERVICE) as WifiManager
     private val _nearbyWifi: MutableStateFlow<List<NearbyWifi>> = MutableStateFlow(emptyList())
     private val _wifiState: MutableStateFlow<Int> = MutableStateFlow(_wifiManager.wifiState)
     private val _isEnable: MutableStateFlow<Boolean> = MutableStateFlow(_wifiManager.isWifiEnabled)

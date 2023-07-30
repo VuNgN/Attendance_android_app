@@ -33,7 +33,7 @@ class BluetoothHelper @Inject constructor(@ApplicationContext private val contex
         it.bluetoothReceiverListener = bluetoothReceiverListener
     }
     private val _bluetoothManager by lazy {
-        context.getSystemService(BluetoothManager::class.java)
+        context.getSystemService(Context.BLUETOOTH_SERVICE) as BluetoothManager
     }
     private val _bluetoothAdapter by lazy {
         _bluetoothManager.adapter
@@ -59,16 +59,12 @@ class BluetoothHelper @Inject constructor(@ApplicationContext private val contex
         _bluetoothAdapter.startDiscovery()
     }
 
-    fun cancelDiscovery() {
+    private fun cancelDiscovery() {
         _bluetoothAdapter.cancelDiscovery()
     }
 
-    fun refreshDiscovery() {
-        cancelDiscovery()
-        startDiscovery()
-    }
-
     fun release() {
+        cancelDiscovery()
         context.unregisterReceiver(bluetoothReceiver)
     }
 }
