@@ -46,16 +46,17 @@ import kotlinx.coroutines.launch
 import java.util.Calendar
 import javax.inject.Inject
 
+@Suppress("DEPRECATION")
 @HiltViewModel
 class AttendanceViewModelImpl @Inject constructor(
     @ApplicationContext private val context: Context,
-    private val _qrcode: MutableStateFlow<String?>,
     private val attendRepo: AttendRepo,
     private val wifiHelper: WifiHelper,
     private val bluetoothHelper: BluetoothHelper
 ) : ViewModel(), AttendanceViewModel {
     private lateinit var cameraProviderFuture: ListenableFuture<ProcessCameraProvider>
     private lateinit var camera: Camera
+    private val _qrcode: MutableStateFlow<String?> = MutableStateFlow(null)
     private val _overviewClass: MutableStateFlow<OverviewClass?> = MutableStateFlow(null)
     private val _error: MutableStateFlow<Message?> = MutableStateFlow(null)
     private val _isSaved: MutableStateFlow<Boolean> = MutableStateFlow(false)
@@ -160,6 +161,7 @@ class AttendanceViewModelImpl @Inject constructor(
                     }
 
                     override fun onReleased() {
+                        // Do nothing
                     }
 
                 }, onSavedResult = object : SavedResult {
