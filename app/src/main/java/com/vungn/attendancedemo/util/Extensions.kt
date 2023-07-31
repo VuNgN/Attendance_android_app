@@ -1,8 +1,5 @@
 package com.vungn.attendancedemo.util
 
-import android.content.ComponentName
-import android.content.Intent
-import android.os.Build
 import com.vungn.attendancedemo.model.Clazz
 import com.vungn.attendancedemo.model.OverviewClass
 import com.vungn.attendancedemo.model.server.AttendClass
@@ -36,22 +33,4 @@ fun Clazz.toAttendClass(): AttendClass {
         nearbyBluetooth = this.nearbyBluetooth,
         createDate = this.createdDate
     )
-}
-
-fun Intent.getRequestAutoStartIntent(): Intent = this.apply {
-    manufacturers.forEach {
-        if (it.isAutoStartSupported()) {
-            this.component = ComponentName(
-                it.pkg, it.cls
-            )
-        }
-    }
-}
-
-fun Manufacturer.isAutoStartSupported(): Boolean {
-    return Build.MANUFACTURER.equals(this.brand, ignoreCase = true)
-}
-
-fun List<Manufacturer>.isAutoStartSupported(): Boolean {
-    return this.any { it.isAutoStartSupported() }
 }

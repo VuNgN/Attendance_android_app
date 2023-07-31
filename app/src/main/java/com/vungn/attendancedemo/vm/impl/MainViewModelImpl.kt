@@ -7,7 +7,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.vungn.attendancedemo.repo.AttendAllRepo
 import com.vungn.attendancedemo.repo.PushedResult
-import com.vungn.attendancedemo.util.MessageError
+import com.vungn.attendancedemo.util.Message
 import com.vungn.attendancedemo.vm.MainViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -33,7 +33,7 @@ class MainViewModelImpl @Inject constructor(
     private val _isAllSynced = MutableStateFlow(false)
     private val _isSyncedSuccess = MutableSharedFlow<Boolean>()
     private val _numOfNotSyncs = MutableStateFlow(0)
-    private val _syncMessage = MutableStateFlow<MessageError?>(null)
+    private val _syncMessage = MutableStateFlow<Message?>(null)
     private val _onCheckSyncAll = object : OnCheckSyncAll {
         override fun onEmpty() {
             viewModelScope.launch(Dispatchers.Main) {
@@ -62,7 +62,7 @@ class MainViewModelImpl @Inject constructor(
             viewModelScope.launch(Dispatchers.Main) {
                 Log.e(TAG, "Push all data fail: $error")
                 _isSyncedSuccess.emit(false)
-                _syncMessage.emit(MessageError(error ?: "Unknown error"))
+                _syncMessage.emit(Message(error ?: "Unknown error"))
                 delay(3000)
                 _syncMessage.emit(null)
             }
@@ -85,7 +85,7 @@ class MainViewModelImpl @Inject constructor(
         get() = _isSyncedSuccess
     override val numOfNotSyncs: StateFlow<Int>
         get() = _numOfNotSyncs
-    override val syncMessage: StateFlow<MessageError?>
+    override val syncMessage: StateFlow<Message?>
         get() = _syncMessage
 
     init {

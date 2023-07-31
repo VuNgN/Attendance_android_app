@@ -14,13 +14,13 @@ import java.util.concurrent.TimeUnit
 
 class QrCodeAnalyzer(private val scannedResult: ScannedResult) : ImageAnalysis.Analyzer {
     private val lastAnalyzedTimeStamp = 0L
-    private lateinit var scanError: MessageError
+    private lateinit var scanError: Message
     private val looper = Handler(Looper.getMainLooper())
 
     init {
         looper.post(object : Runnable {
             override fun run() {
-                scanError = MessageError(message = "QR code is not correct")
+                scanError = Message(message = "QR code is not correct")
                 looper.postDelayed(this, 3000)
             }
         })
@@ -65,6 +65,6 @@ class QrCodeAnalyzer(private val scannedResult: ScannedResult) : ImageAnalysis.A
 
     interface ScannedResult {
         fun onScanned(barcode: Barcode)
-        fun onError(message: MessageError)
+        fun onError(message: Message)
     }
 }

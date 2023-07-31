@@ -1,28 +1,23 @@
 package com.vungn.attendancedemo.repo
 
-import android.content.Context
 import android.util.Log
-import androidx.work.OneTimeWorkRequest
-import androidx.work.OneTimeWorkRequestBuilder
-import androidx.work.OutOfQuotaPolicy
-import androidx.work.WorkManager
-import androidx.work.workDataOf
 import com.google.gson.Gson
 import com.vungn.attendancedemo.data.dao.ClassDao
+import com.vungn.attendancedemo.data.service.AttendanceService
 import com.vungn.attendancedemo.model.Clazz
-import com.vungn.attendancedemo.worker.AttendWorker
-import com.vungn.attendancedemo.worker.AttendWorker.Companion.ID_INPUT
-import dagger.hilt.android.qualifiers.ApplicationContext
+import com.vungn.attendancedemo.util.toAttendClass
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.flow.onCompletion
 import kotlinx.coroutines.launch
-import java.util.UUID
+import retrofit2.Call
+import retrofit2.Callback
+import retrofit2.Response
 import javax.inject.Inject
 
 class AttendRepo @Inject constructor(
-    @ApplicationContext private val context: Context, private val _dao: ClassDao
+    private val _service: AttendanceService, private val _dao: ClassDao
 ) : Execute() {
     private lateinit var _data: Clazz
     private var _id: Long? = null
@@ -49,9 +44,12 @@ class AttendRepo @Inject constructor(
         }
     }
 
-    suspend fun execute(clazz: Clazz, onSavedResult: SavedResult) {
+    suspend fun execute(
+        clazz: Clazz, onSavedResult: SavedResult, onPushedResult: PushedResult<Unit>
+    ) {
         _data = clazz
         _onSavedResult = onSavedResult
+        _onPushedResult = onPushedResult
         execute()
     }
 
@@ -66,23 +64,38 @@ class AttendRepo @Inject constructor(
     }
 
     override suspend fun push(): Flow<Boolean> = callbackFlow {
-        val uuid = UUID.randomUUID()
-        val workManager = WorkManager.getInstance(context)
-        val attendWorker: OneTimeWorkRequest =
-            OneTimeWorkRequestBuilder<AttendWorker>().setId(uuid).setExpedited(
-                OutOfQuotaPolicy.RUN_AS_NON_EXPEDITED_WORK_REQUEST
-            ).setInputData(workDataOf(ID_INPUT to _id)).build()
-        workManager.enqueue(attendWorker)
-        launch { send(false) }
-        awaitClose { }
+        val call = _service.attendAll(listOf(_data.toAttendClass()))
+        call.enqueue(object : Callback<Unit> {
+            override fun onResponse(call: Call<Unit>, response: Response<Unit>) {
+                if (response.isSuccessful) {
+                    _onPushedResult.onSuccess(response.body())
+                    launch { send(true) }
+                } else {
+                    _onPushedResult.onError(response.message())
+                    launch { send(false) }
+                }
+            }
+
+            override fun onFailure(call: Call<Unit>, t: Throwable) {
+                _onPushedResult.onError(t.message)
+                launch { send(false) }
+            }
+        })
+        awaitClose { call.cancel() }
     }.onCompletion {
         _onPushedResult.onReleased()
     }
 
-    /**
-     * Do nothing because database is updated in [AttendWorker]
-     */
-    override suspend fun updateLocalDatabase() {}
+    override suspend fun updateLocalDatabase() {
+        if (_id == null) {
+            Log.e(TAG, "updateLocalDatabase: Null id")
+            return
+        }
+        val data = _dao.getClassById(_id!!)
+        val syncedData = data.copy(isSync = true)
+        _dao.update(syncedData)
+        Log.d(TAG, "Data with id($_id) was updated: ${Gson().toJson(syncedData)}")
+    }
 
     companion object {
         private val TAG = this::class.simpleName
