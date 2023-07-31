@@ -16,7 +16,7 @@ object ServiceModule {
     @Singleton
     @Provides
     fun serviceProvide(): AttendanceService {
-        val retrofit = Retrofit.Builder().baseUrl("https://mytlu.shinchoku.dev/")
+        val retrofit = Retrofit.Builder().baseUrl("https://black-river-5273.fly.dev/")
             .addConverterFactory(GsonConverterFactory.create()).build()
         return retrofit.create(AttendanceService::class.java)
     }

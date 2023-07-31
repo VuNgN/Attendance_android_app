@@ -98,8 +98,10 @@ class AttendWorker @AssistedInject constructor(
     private fun createForegroundInfo(): ForegroundInfo {
         val notification: Notification =
             NotificationCompat.Builder(applicationContext, MyApplication.CHANNEL_ID)
-                .setContentTitle("Attendance").setContentText("Attending")
-                .setSmallIcon(R.drawable.ic_launcher_foreground).setTicker("")
+                .setContentTitle("Attendance").setContentText("Attending").setStyle(
+                    NotificationCompat.BigTextStyle()
+                        .bigText("Please DON'T turn off your wifi and bluetooth")
+                ).setSmallIcon(R.drawable.ic_launcher_foreground).setTicker("")
                 .setPriority(NotificationCompat.PRIORITY_DEFAULT)
                 .setForegroundServiceBehavior(FOREGROUND_SERVICE_IMMEDIATE).setOngoing(true).build()
 

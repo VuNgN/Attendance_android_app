@@ -3,6 +3,17 @@ package com.vungn.attendancedemo.ui
 import android.Manifest
 import android.annotation.SuppressLint
 import android.os.Build
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.ExperimentalAnimationApi
+import androidx.compose.animation.SizeTransform
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.shrinkVertically
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
+import androidx.compose.animation.with
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -26,10 +37,11 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.dp
 import com.vungn.attendancedemo.vm.MainViewModel
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalAnimationApi::class)
 @SuppressLint("MissingPermission")
 @Composable
 fun Main(
@@ -75,6 +87,7 @@ fun Main(
     val isSyncedSuccess = viewModel.isSyncedSuccess.collectAsState(false)
     val numOfNotSyncs = viewModel.numOfNotSyncs.collectAsState()
     val syncMessage = viewModel.syncMessage.collectAsState()
+    val density = LocalDensity.current
 
     RequestPermissions(permissions = permissionList) {
         val snackBarHostState = remember { SnackbarHostState() }
@@ -94,12 +107,23 @@ fun Main(
                     .fillMaxSize(),
                 contentAlignment = Alignment.Center
             ) {
-                if (!isAllSynced.value && isOnline.value) {
+                AnimatedVisibility(modifier = Modifier
+                    .fillMaxWidth()
+                    .align(Alignment.TopCenter),
+                    visible = !isAllSynced.value && isOnline.value,
+                    enter = slideInVertically {
+                        // Slide in from 40 dp from the top.
+                        with(density) { -40.dp.roundToPx() }
+                    } + expandVertically(
+                        // Expand from the top.
+                        expandFrom = Alignment.Top
+                    ) + fadeIn(
+                        // Fade in with the initial alpha of 0.3f.
+                        initialAlpha = 0.3f
+                    ),
+                    exit = slideOutVertically() + shrinkVertically() + fadeOut()) {
                     Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .align(Alignment.TopCenter)
-                            .padding(10.dp),
+                        modifier = Modifier.padding(10.dp),
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically
                     ) {
@@ -116,12 +140,23 @@ fun Main(
                         }
                     }
                 }
-                if (isSyncedSuccess.value) {
+                AnimatedVisibility(modifier = Modifier
+                    .fillMaxWidth()
+                    .align(Alignment.TopCenter),
+                    visible = isSyncedSuccess.value,
+                    enter = slideInVertically {
+                        // Slide in from 40 dp from the top.
+                        with(density) { -40.dp.roundToPx() }
+                    } + expandVertically(
+                        // Expand from the top.
+                        expandFrom = Alignment.Top
+                    ) + fadeIn(
+                        // Fade in with the initial alpha of 0.3f.
+                        initialAlpha = 0.3f
+                    ),
+                    exit = slideOutVertically() + shrinkVertically() + fadeOut()) {
                     Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .align(Alignment.TopCenter)
-                            .background(MaterialTheme.colorScheme.primary),
+                        modifier = Modifier.background(MaterialTheme.colorScheme.primary),
                         horizontalArrangement = Arrangement.Center,
                         verticalAlignment = Alignment.CenterVertically
                     ) {
@@ -137,18 +172,30 @@ fun Main(
                 }) {
                     Text(text = "Camera")
                 }
-                Box(
-                    modifier = Modifier
-                        .align(Alignment.BottomCenter)
-                        .fillMaxWidth()
-                        .background(if (isOnline.value) MaterialTheme.colorScheme.primary else Color.Gray),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text(
-                        text = if (isOnline.value) "You're online" else "You're offline",
-                        modifier = Modifier.padding(vertical = 2.dp),
-                        color = MaterialTheme.colorScheme.onPrimary
-                    )
+                AnimatedContent(modifier = Modifier
+                    .align(Alignment.BottomCenter)
+                    .fillMaxWidth(),
+                    targetState = isOnline.value,
+                    contentAlignment = Alignment.BottomCenter,
+                    transitionSpec = {
+                        if (targetState > initialState) {
+                            slideInVertically { height -> height } + fadeIn() with slideOutVertically { height -> -height } + fadeOut()
+                        } else {
+                            slideInVertically { height -> -height } + fadeIn() with slideOutVertically { height -> height } + fadeOut()
+                        }.using(
+                            sizeTransform = SizeTransform(clip = false)
+                        )
+                    }) { isOnline ->
+                    Box(
+                        modifier = Modifier.background(if (isOnline) MaterialTheme.colorScheme.primary else Color.Gray),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = if (isOnline) "You're online" else "You're offline",
+                            modifier = Modifier.padding(vertical = 2.dp),
+                            color = MaterialTheme.colorScheme.onPrimary
+                        )
+                    }
                 }
             }
         }
