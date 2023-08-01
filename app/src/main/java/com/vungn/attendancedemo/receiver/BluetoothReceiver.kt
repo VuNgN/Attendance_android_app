@@ -9,6 +9,7 @@ import android.content.Intent
 import android.os.Build
 import android.util.Log
 
+@Suppress("DEPRECATION")
 @SuppressLint("MissingPermission")
 class BluetoothReceiver : BroadcastReceiver() {
     private var _bluetoothReceiverListener: BluetoothReceiverListener? = null
