@@ -43,8 +43,14 @@ class QrCodeAnalyzer(private val scannedResult: ScannedResult) : ImageAnalysis.A
                         barcode.rawValue?.let { barcodeValue ->
                             val isCorrect = barcodeValue.contains("mytlu://")
                             if (isCorrect) {
-                                Log.d(TAG, "analyze QR code: $barcodeValue is correct")
-                                scannedResult.onScanned(barcode)
+                                try {
+                                    barcode.rawValue?.toOverviewClass()
+                                    Log.d(TAG, "analyze QR code: $barcodeValue is correct")
+                                    scannedResult.onScanned(barcode)
+                                } catch (e: Exception) {
+                                    Log.e(TAG, "Analyze error: ${e.message}")
+                                    scannedResult.onError(scanError)
+                                }
                             } else {
                                 scannedResult.onError(scanError)
                             }
