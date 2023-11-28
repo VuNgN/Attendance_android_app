@@ -1,0 +1,17 @@
+{
+  "client_id" : "6fea03b9-6f65-4507-994a-adee3daa6901",
+  "authorization_user_agent" : "DEFAULT",
+  "account_mode": "SINGLE",
+  "broker_redirect_uri_registered": true,
+  "redirect_uri" : "msauth://com.vungn.attendancedemo/j0in8iRVGhSx%2Bjuk2DdYf2k%2FxSA%3D",
+  "authorities" : [
+    {
+      "type": "AAD",
+      "audience": {
+        "type": "AzureADMyOrg",
+        "tenant_id": "bbf9aad6-5f58-4387-927e-02f0b07a72fa"
+      }
+    }
+  ]
+}
+

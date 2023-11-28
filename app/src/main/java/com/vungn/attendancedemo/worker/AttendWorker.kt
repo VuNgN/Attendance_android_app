@@ -15,8 +15,8 @@ import com.vungn.attendancedemo.MyApplication
 import com.vungn.attendancedemo.R
 import com.vungn.attendancedemo.data.dao.ClassDao
 import com.vungn.attendancedemo.data.service.AttendanceService
-import com.vungn.attendancedemo.util.BluetoothHelper
-import com.vungn.attendancedemo.util.WifiHelper
+import com.vungn.attendancedemo.util.helper.bluetooth.BluetoothHelper
+import com.vungn.attendancedemo.util.helper.wifi.WifiHelper
 import com.vungn.attendancedemo.util.toAttendClass
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject

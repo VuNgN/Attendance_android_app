@@ -1,4 +1,4 @@
-package com.vungn.attendancedemo.util
+package com.vungn.attendancedemo.util.helper.wifi
 
 import android.annotation.SuppressLint
 import android.content.Context

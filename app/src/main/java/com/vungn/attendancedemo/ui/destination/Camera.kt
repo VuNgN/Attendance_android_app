@@ -1,4 +1,4 @@
-package com.vungn.attendancedemo.ui
+package com.vungn.attendancedemo.ui.destination
 
 import androidx.camera.view.PreviewView
 import androidx.compose.foundation.layout.Box

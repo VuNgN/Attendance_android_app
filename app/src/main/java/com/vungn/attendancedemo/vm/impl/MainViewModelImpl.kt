@@ -5,9 +5,14 @@ import android.net.Network
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.microsoft.graph.models.User
 import com.vungn.attendancedemo.repo.AttendAllRepo
 import com.vungn.attendancedemo.repo.PushedResult
+import com.vungn.attendancedemo.share.UserSharePreference
+import com.vungn.attendancedemo.util.LoginState
 import com.vungn.attendancedemo.util.MessageError
+import com.vungn.attendancedemo.util.helper.auth.AuthenticationHelper
+import com.vungn.attendancedemo.util.helper.auth.CurrentAccountCallback
 import com.vungn.attendancedemo.vm.MainViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -22,18 +27,26 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import java.lang.Exception
 import javax.inject.Inject
 
 @HiltViewModel
 class MainViewModelImpl @Inject constructor(
-    @ApplicationContext context: Context, private val attendAllRepo: AttendAllRepo
+    @ApplicationContext context: Context,
+    private val attendAllRepo: AttendAllRepo,
+    private val authHelper: AuthenticationHelper,
+    private val userSharePreference: UserSharePreference
 ) : ViewModel(), MainViewModel {
-    private val _loading = MutableStateFlow(false)
     private val _isOnline = checkIsOnline(context = context)
+    private val _user = MutableStateFlow<User?>(null)
+    private val _isCheckingLogin = MutableStateFlow(false)
+    private val _loading = MutableStateFlow(false)
     private val _isAllSynced = MutableStateFlow(false)
     private val _isSyncedSuccess = MutableSharedFlow<Boolean>()
     private val _numOfNotSyncs = MutableStateFlow(0)
     private val _syncMessage = MutableStateFlow<MessageError?>(null)
+    private val _loginState = MutableStateFlow(LoginState.CHECKING)
+
     private val _onCheckSyncAll = object : OnCheckSyncAll {
         override fun onEmpty() {
             viewModelScope.launch(Dispatchers.Main) {
@@ -62,7 +75,12 @@ class MainViewModelImpl @Inject constructor(
             viewModelScope.launch(Dispatchers.Main) {
                 Log.e(TAG, "Push all data fail: $error")
                 _isSyncedSuccess.emit(false)
-                _syncMessage.emit(MessageError(error ?: "Unknown error"))
+                _syncMessage.emit(
+                    MessageError(
+                        error
+                            ?: "Unknown error"
+                    )
+                )
                 delay(3000)
                 _syncMessage.emit(null)
             }
@@ -74,9 +92,14 @@ class MainViewModelImpl @Inject constructor(
             }
         }
     }
-
+    override val user: StateFlow<User?>
+        get() = _user
+    override val loginState: StateFlow<LoginState>
+        get() = _loginState
     override val loading: StateFlow<Boolean>
         get() = _loading
+    override val isCheckingLogin: StateFlow<Boolean>
+        get() = _isCheckingLogin
     override val isOnline: StateFlow<Boolean>
         get() = _isOnline
     override val isAllSynced: StateFlow<Boolean>
@@ -102,6 +125,37 @@ class MainViewModelImpl @Inject constructor(
         _loading.value = true
         viewModelScope.launch(Dispatchers.IO) {
             attendAllRepo.execute(onPushedResult = _onPushedResult)
+        }
+    }
+
+    override fun checkLoginState() {
+        _isCheckingLogin.value = true
+        viewModelScope.launch(Dispatchers.IO) {
+            authHelper.loadAccount(object : CurrentAccountCallback {
+                override fun onAccountLoaded() {
+                    authHelper.acquireTokenSilently().thenAccept {
+                        val token = it.accessToken
+                        viewModelScope.launch {
+                            _loginState.emit(LoginState.LOGGED_IN)
+                        }
+                        Log.d(TAG, "onAccountLoaded: token: $token")
+                    }.exceptionally {
+                        it.printStackTrace()
+                        null
+                    }
+                    viewModelScope.launch {
+                        _isCheckingLogin.emit(false)
+                    }
+                }
+
+                override fun onError(exception: Exception) {
+                    Log.d(TAG, "onError: ", exception)
+                    viewModelScope.launch {
+                        _isCheckingLogin.emit(false)
+                        _loginState.emit(LoginState.NOT_LOGGED_IN)
+                    }
+                }
+            })
         }
     }
 

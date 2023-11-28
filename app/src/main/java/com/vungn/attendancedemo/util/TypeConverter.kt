@@ -4,7 +4,7 @@ import androidx.room.TypeConverter
 import com.google.gson.Gson
 import java.util.Date
 
-object TypeConverter {
+class TypeConverter {
     @TypeConverter
     fun toDate(dateLong: Long?): Date? {
         return if (dateLong == null) null else Date(dateLong)

@@ -1,4 +1,4 @@
-package com.vungn.attendancedemo.util
+package com.vungn.attendancedemo.util.helper.bluetooth
 
 import android.annotation.SuppressLint
 import android.bluetooth.BluetoothAdapter

@@ -6,9 +6,9 @@ import androidx.lifecycle.viewModelScope
 import com.vungn.attendancedemo.model.OverviewClass
 import com.vungn.attendancedemo.repo.AttendRepo
 import com.vungn.attendancedemo.repo.SavedResult
-import com.vungn.attendancedemo.util.BluetoothHelper
+import com.vungn.attendancedemo.util.helper.bluetooth.BluetoothHelper
 import com.vungn.attendancedemo.util.MessageError
-import com.vungn.attendancedemo.util.WifiHelper
+import com.vungn.attendancedemo.util.helper.wifi.WifiHelper
 import com.vungn.attendancedemo.util.toClazz
 import com.vungn.attendancedemo.util.toOverviewClass
 import com.vungn.attendancedemo.vm.AttendanceViewModel

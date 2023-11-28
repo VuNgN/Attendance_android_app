@@ -1,4 +1,4 @@
-package com.vungn.attendancedemo.ui
+package com.vungn.attendancedemo.ui.destination
 
 import android.bluetooth.BluetoothAdapter
 import android.content.Intent
