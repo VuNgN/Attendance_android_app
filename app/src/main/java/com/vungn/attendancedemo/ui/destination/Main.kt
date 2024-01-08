@@ -37,7 +37,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.dp
-import com.vungn.attendancedemo.util.LoginState
 import com.vungn.attendancedemo.util.permissions
 import com.vungn.attendancedemo.vm.MainViewModel
 
@@ -46,134 +45,107 @@ import com.vungn.attendancedemo.vm.MainViewModel
 @Composable
 fun Main(
     modifier: Modifier = Modifier,
-    navigateToLogin: () -> Unit = {},
     navigateToCamera: () -> Unit = {},
     viewModel: MainViewModel
 ) {
     val permissionList  = permissions
     val loading         = viewModel.loading.collectAsState()
-    val loginState      = viewModel.loginState.collectAsState()
     val isOnline        = viewModel.isOnline.collectAsState()
     val isAllSynced     = viewModel.isAllSynced.collectAsState()
-    val isCheckingLogin = viewModel.isCheckingLogin.collectAsState()
     val isSyncedSuccess = viewModel.isSyncedSuccess.collectAsState(false)
     val numOfNotSyncs   = viewModel.numOfNotSyncs.collectAsState()
     val syncMessage     = viewModel.syncMessage.collectAsState()
     val density         = LocalDensity.current
 
-    LaunchedEffect(key1 = true) {
-        viewModel.checkLoginState()
-    }
-
     RequestPermissions(permissions = permissionList) {
         val snackBarHostState = remember { SnackbarHostState() }
-
-        if (isCheckingLogin.value) {
-            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                CircularProgressIndicator()
+        LaunchedEffect(key1 = syncMessage.value, block = {
+            if (syncMessage.value != null) {
+                snackBarHostState.showSnackbar(syncMessage.value !!.message)
             }
-        } else {
-            LaunchedEffect(key1 = loginState.value) {
-                if (loginState.value == LoginState.NOT_LOGGED_IN) {
-                    navigateToLogin()
-                }
-            }
+        })
 
-            LaunchedEffect(
-                key1 = syncMessage.value,
-                block = {
-                    if (syncMessage.value != null) {
-                        snackBarHostState.showSnackbar(syncMessage.value!!.message)
-                    }
-                }
-            )
-
-            Scaffold(
-                modifier = modifier,
-                snackbarHost = { SnackbarHost(hostState = snackBarHostState) }
-            ) { paddingValues ->
-                Box(
-                    modifier = Modifier
-                        .padding(paddingValues)
-                        .fillMaxSize(),
-                    contentAlignment = Alignment.Center
-                ) {
-                    AnimatedVisibility(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .align(Alignment.TopCenter),
-                        visible = !isAllSynced.value && isOnline.value,
-                        enter = slideInVertically { with(density) { -40.dp.roundToPx() } } // Slide in from 40 dp from the top.
-                                + expandVertically(expandFrom = Alignment.Top) // Expand from the top.
-                                + fadeIn(initialAlpha = 0.3f), // Fade in with the initial alpha of 0.3f.
-                        exit = slideOutVertically() + shrinkVertically() + fadeOut()) {
-                        Row(
-                            modifier = Modifier.padding(10.dp),
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Text(text = "You have ${numOfNotSyncs.value} not synced classes")
-                            Button(onClick = { viewModel.syncAll() }, enabled = !loading.value) {
-                                if (loading.value) {
-                                    CircularProgressIndicator(
-                                        color = MaterialTheme.colorScheme.onPrimary,
-                                        modifier = Modifier.size(25.dp)
-                                    )
-                                } else {
-                                    Text(text = "Sync all")
-                                }
+        Scaffold(
+            modifier = modifier,
+            snackbarHost = { SnackbarHost(hostState = snackBarHostState) }) { paddingValues ->
+            Box(
+                modifier = Modifier
+                    .padding(paddingValues)
+                    .fillMaxSize(),
+                contentAlignment = Alignment.Center
+            ) {
+                AnimatedVisibility(modifier = Modifier
+                    .fillMaxWidth()
+                    .align(Alignment.TopCenter),
+                    visible = ! isAllSynced.value && isOnline.value,
+                    enter = slideInVertically { with(density) { - 40.dp.roundToPx() } } // Slide in from 40 dp from the top.
+                            + expandVertically(expandFrom = Alignment.Top) // Expand from the top.
+                            + fadeIn(initialAlpha = 0.3f), // Fade in with the initial alpha of 0.3f.
+                    exit = slideOutVertically() + shrinkVertically() + fadeOut()) {
+                    Row(
+                        modifier = Modifier.padding(10.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(text = "You have ${numOfNotSyncs.value} not synced classes")
+                        Button(onClick = { viewModel.syncAll() }, enabled = ! loading.value) {
+                            if (loading.value) {
+                                CircularProgressIndicator(
+                                    color = MaterialTheme.colorScheme.onPrimary,
+                                    modifier = Modifier.size(25.dp)
+                                )
+                            } else {
+                                Text(text = "Sync all")
                             }
                         }
                     }
-                    AnimatedVisibility(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .align(Alignment.TopCenter),
-                        visible = isSyncedSuccess.value,
-                        enter = slideInVertically { with(density) { -40.dp.roundToPx() } } // Slide in from 40 dp from the top.
-                                + expandVertically(expandFrom = Alignment.Top) // Expand from the top.
-                                + fadeIn(initialAlpha = 0.3f), // Fade in with the initial alpha of 0.3f.
-                        exit = slideOutVertically() + shrinkVertically() + fadeOut()) {
-                        Row(
-                            modifier = Modifier.background(MaterialTheme.colorScheme.primary),
-                            horizontalArrangement = Arrangement.Center,
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Text(
-                                modifier = Modifier.padding(vertical = 5.dp),
-                                text = "All classes was synced",
-                                color = MaterialTheme.colorScheme.onPrimary
-                            )
-                        }
+                }
+                AnimatedVisibility(modifier = Modifier
+                    .fillMaxWidth()
+                    .align(Alignment.TopCenter),
+                    visible = isSyncedSuccess.value,
+                    enter = slideInVertically { with(density) { - 40.dp.roundToPx() } } // Slide in from 40 dp from the top.
+                            + expandVertically(expandFrom = Alignment.Top) // Expand from the top.
+                            + fadeIn(initialAlpha = 0.3f), // Fade in with the initial alpha of 0.3f.
+                    exit = slideOutVertically() + shrinkVertically() + fadeOut()) {
+                    Row(
+                        modifier = Modifier.background(MaterialTheme.colorScheme.primary),
+                        horizontalArrangement = Arrangement.Center,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            modifier = Modifier.padding(vertical = 5.dp),
+                            text = "All classes was synced",
+                            color = MaterialTheme.colorScheme.onPrimary
+                        )
                     }
-                    Button(onClick = { navigateToCamera() }) {
-                        Text(text = "Camera")
-                    }
-                    AnimatedContent(
-                        modifier = Modifier
-                            .align(Alignment.BottomCenter)
-                            .fillMaxWidth(),
-                        targetState = isOnline.value,
-                        contentAlignment = Alignment.BottomCenter,
-                        transitionSpec = {
-                            if (targetState > initialState) {
-                                slideInVertically { height -> height } + fadeIn() with slideOutVertically { height -> -height } + fadeOut()
-                            } else {
-                                slideInVertically { height -> -height } + fadeIn() with slideOutVertically { height -> height } + fadeOut()
-                            }.using(
-                                sizeTransform = SizeTransform(clip = false)
-                            )
-                        }) { isOnline ->
-                        Box(
-                            modifier = Modifier.background(if (isOnline) MaterialTheme.colorScheme.primary else Color.Gray),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Text(
-                                text = if (isOnline) "You're online" else "You're offline",
-                                modifier = Modifier.padding(vertical = 2.dp),
-                                color = MaterialTheme.colorScheme.onPrimary
-                            )
-                        }
+                }
+                Button(onClick = { navigateToCamera() }) {
+                    Text(text = "Camera")
+                }
+                AnimatedContent(modifier = Modifier
+                    .align(Alignment.BottomCenter)
+                    .fillMaxWidth(),
+                    targetState = isOnline.value,
+                    contentAlignment = Alignment.BottomCenter,
+                    transitionSpec = {
+                        if (targetState > initialState) {
+                            slideInVertically { height -> height } + fadeIn() with slideOutVertically { height -> - height } + fadeOut()
+                        } else {
+                            slideInVertically { height -> - height } + fadeIn() with slideOutVertically { height -> height } + fadeOut()
+                        }.using(
+                            sizeTransform = SizeTransform(clip = false)
+                        )
+                    }) { isOnline ->
+                    Box(
+                        modifier = Modifier.background(if (isOnline) MaterialTheme.colorScheme.primary else Color.Gray),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = if (isOnline) "You're online" else "You're offline",
+                            modifier = Modifier.padding(vertical = 2.dp),
+                            color = MaterialTheme.colorScheme.onPrimary
+                        )
                     }
                 }
             }

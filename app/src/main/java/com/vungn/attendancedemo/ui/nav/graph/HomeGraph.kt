@@ -23,16 +23,13 @@ fun NavGraphBuilder.homeGraph(navController: NavHostController) {
     navigation(route = Graphs.GRAPH_HOME.name, startDestination = Routes.ROUTE_MAIN.name) {
         composable(route = Routes.ROUTE_MAIN.name) {
             val vm: MainViewModel = hiltViewModel<MainViewModelImpl>()
-            Main(
-                modifier = Modifier.fillMaxSize(),
+            Main(modifier = Modifier.fillMaxSize(),
                 viewModel = vm,
-                navigateToCamera = { navController.navigate(Routes.ROUTE_CAMERA.name) },
-                navigateToLogin = { navController.navigate(Graphs.GRAPH_LOGIN.name) })
+                navigateToCamera = { navController.navigate(Routes.ROUTE_CAMERA.name) })
         }
         composable(route = Routes.ROUTE_CAMERA.name) {
             val vm: CameraViewModel = hiltViewModel<CameraViewModelImpl>()
-            Camera(
-                modifier = Modifier.fillMaxSize(),
+            Camera(modifier = Modifier.fillMaxSize(),
                 viewModel = vm,
                 navigateBack = { navController.popBackStack() },
                 navigateToAttendance = {
